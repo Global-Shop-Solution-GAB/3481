@@ -1,0 +1,398 @@
+Program.Sub.ScreenSU.Start
+gui.SS_Form1..create
+gui.SS_Form1..caption("Incentive Pay Eligibility")
+gui.SS_Form1..size(4135,2695)
+gui.SS_Form1..position(0,0)
+gui.SS_Form1..event(unload,ss_form1_unload)
+gui.SS_Form1..alwaysontop(False)
+gui.SS_Form1..fontname("Arial")
+gui.SS_Form1..fontsize(8)
+gui.SS_Form1..forecolor(0)
+gui.SS_Form1..fontstyle(,,,,)
+gui.SS_Form1..BackColor(-2147483633)
+gui.SS_Form1..controlbox(True)
+gui.SS_Form1..maxbutton(False)
+gui.SS_Form1..minbutton(False)
+gui.SS_Form1..mousepointer(0)
+gui.SS_Form1..moveable(True)
+gui.SS_Form1..sizeable(False)
+gui.SS_Form1..ShowInTaskBar(True)
+gui.SS_Form1..titlebar(True)
+gui.SS_Form1.lbl_dtpBeg.create(label,"Pay Period Begin",True,1800,200,1,100,135,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.dtpBeg.create(datepicker)
+gui.SS_Form1.dtpBeg.visible(True)
+gui.SS_Form1.dtpBeg.size(1800,345)
+gui.SS_Form1.dtpBeg.zorder(0)
+gui.SS_Form1.dtpBeg.position(100,335)
+gui.SS_Form1.dtpBeg.enabled(True)
+gui.SS_Form1.dtpBeg.event(change,dtpbeg_change)
+gui.SS_Form1.dtpBeg.checkbox(False)
+gui.SS_Form1.lbl_dtpEnd.create(label,"Pay Period End",True,1800,200,1,1985,135,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.dtpEnd.create(datepicker)
+gui.SS_Form1.dtpEnd.visible(True)
+gui.SS_Form1.dtpEnd.size(1800,345)
+gui.SS_Form1.dtpEnd.zorder(0)
+gui.SS_Form1.dtpEnd.position(1985,335)
+gui.SS_Form1.dtpEnd.enabled(True)
+gui.SS_Form1.dtpEnd.checkbox(False)
+gui.SS_Form1.lbl1.create(label,"",True,1800,200,1,100,850,True,0,Arial,8,-2147483633,0)
+gui.SS_Form1.txtHours.create(textbox,"",True,1800,330,1,100,1220,True,0,Arial,8,16777215,1)
+gui.SS_Form1.cmdOk.create(button)
+gui.SS_Form1.cmdOk.caption("Ok")
+gui.SS_Form1.cmdOk.visible(True)
+gui.SS_Form1.cmdOk.size(1000,360)
+gui.SS_Form1.cmdOk.zorder(0)
+gui.SS_Form1.cmdOk.position(100,1720)
+gui.SS_Form1.cmdOk.enabled(True)
+gui.SS_Form1.cmdOk.fontname("Arial")
+gui.SS_Form1.cmdOk.fontsize(8)
+gui.SS_Form1.cmdOk.event(click,cmdok_click)
+gui.SS_Form1.dtpBeg.tabstop(true)
+gui.SS_Form1.dtpBeg.tabindex(1)
+gui.SS_Form1.dtpEnd.tabstop(true)
+gui.SS_Form1.dtpEnd.tabindex(2)
+gui.SS_Form1.txtHours.tabstop(true)
+gui.SS_Form1.txtHours.tabindex(3)
+gui.SS_Form1.cmdOk.tabstop(true)
+gui.SS_Form1.cmdOk.tabindex(4)
+
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+
+Variable.UDT.Pyrl.Define("Trmnl",String)
+Variable.UDT.Pyrl.Define("Employee",String,Employee)
+Variable.UDT.Pyrl.Define("Type",String,Type)
+Variable.UDT.Pyrl.Define("EC",String,EC)
+Variable.UDT.Pyrl.Define("Hours",Float,Hours)
+Variable.UDT.Pyrl.Define("EStatus",String,Excused_Status)
+Variable.UDT.Pyrl.Define("Week1_Flag",String)
+Variable.UDT.Pyrl.Define("Week2_Flag",String)
+Variable.UDT.Pyrl.Define("Beg_Pay_Prd",String)
+Variable.UDT.Pyrl.Define("End_Pay_Prd",String)
+Variable.uGlobal.uPyrl.Declare("Pyrl")
+
+
+Variable.UDT.Emp.Define("Trmnl",String)
+Variable.UDT.Emp.Define("Employee",String,Employee)
+Variable.UDT.Emp.Define("Type",String,Type)
+Variable.UDT.Emp.Define("EC",String,EC)
+Variable.UDT.Emp.Define("Hours",Float,Hours)
+Variable.UDT.Emp.Define("EStatus",String,Excused_Status)
+Variable.UDT.Emp.Define("Week1_Flag",String)
+Variable.UDT.Emp.Define("Week2_Flag",String)
+Variable.UDT.Emp.Define("Beg_Pay_Prd",String)
+Variable.UDT.Emp.Define("End_Pay_Prd",String)
+Variable.uGlobal.uEmp.Declare("Emp")
+Program.Sub.Preflight.End
+
+
+Program.Sub.Main.Start
+
+F.ODBC.Connection!Con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+'get screen information
+F.Intrinsic.Control.CallSub(Openscreen)
+'if a 1 week peiod was entered, show input screen
+F.Intrinsic.Control.If(V.Args.FINAL,=,"False")
+	Gui.SS_Form1..Show
+'if a 2 week period was entered, should be finalrun, but verify
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.CallSub(Verify,"BegDte",V.Args.BegDte,"EndDte",V.Args.EndDte)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+
+F.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+
+program.sub.dtpbeg_change.start
+
+
+V.Local.dDate.Declare(Date)
+
+F.Intrinsic.Date.DateAdd("d",13,V.Screen.SS_Form1!dtpBeg.Value,V.Local.dDate)
+Gui.SS_Form1.dtpEnd.Value(V.Local.dDate)
+
+program.sub.dtpbeg_change.end
+
+
+program.sub.cmdok_click.start
+
+V.Local.sSel.Declare(String)
+V.Local.sLabel.Declare(String)
+V.Local.sTime.Declare(String)
+V.Local.sDate.Declare(String)
+V.Local.dDate.Declare(Date)
+V.Local.iRet.Declare(Long)
+V.Local.sText.Declare(String)
+V.Local.iFlag.Declare(Long)
+V.Local.bNumeric.Declare(Boolean)
+V.Local.sValue.Declare(String)
+
+'make sure the entered date range is a 2 week period.  will default to 2 weeks, but since they cacn change it, just wanted to verify
+F.Intrinsic.Date.DateDiff("D",V.Screen.SS_Form1!dtpBeg.Value,V.Screen.SS_Form1!dtpEnd.Value,V.Local.iRet)
+F.Intrinsic.Control.If(V.Local.iRet,<>,13)
+	F.Intrinsic.UI.Msgbox("Invalid Date Range.  Please re-enter")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+'make sure the hours field is numeric.  will default to 40, but since they can change it, just want to verify
+F.Intrinsic.Math.IsNumeric(V.Screen.SS_Form1!txtHours.Text.trim,V.Local.bNumeric)
+F.Intrinsic.Control.If(V.Local.bNumeric,=,False)
+	F.Intrinsic.UI.Msgbox("Invalid Hours.  Please re-enter")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+'get run date/time
+Function.Intrinsic.String.Left(Variable.Passed.888888,8,Variable.Local.sDate)
+Function.Intrinsic.String.Mid(Variable.Passed.888888,9,6,Variable.Local.sTime)
+
+'get all employees/eligible pay type hours
+F.Intrinsic.String.Concat("select Employee,Type, EC, Hours, Excused_Status from Pyrl_Labor_Xfer where Run_Cymd='",V.Local.sDate,"' and Run_Time='",V.Local.sTime,"' and (TYPE='RT' or EC='01' or EC='02' or EC='04' or EC='08') order by Employee,Type, EC",V.Local.sSel)
+F.ODBC.Connection!Con.OpenRecordsetRO("rstSel",V.Local.sSel)
+	F.Intrinsic.Control.If(V.ODBC.Con!rstSel.EOF,=,False)
+		F.Intrinsic.Variable.LoadUDTFromRecordset("Con","rstSel","v.uGlobal.uPyrl",False)
+	F.Intrinsic.Control.EndIf
+F.ODBC.Con!rstSel.Close
+
+'flag and delete the unexcused absence
+V.Local.sValue.Set("<>::E")
+F.Intrinsic.Variable.UDTMultiFlag(V.uGlobal.uPyrl!EC,"02",V.uGlobal.uPyrl!EStatus,V.Local.sValue)
+F.Intrinsic.Variable.UDTDeleteFlagged(V.uGlobal.uPyrl)
+
+'hours field is a string, but need the total.  call sub to total the hours by employee
+F.Intrinsic.Control.CallSub(Totalhours)
+'the uPyrl should only have eligible employees, now
+
+'get pay period dates
+F.Intrinsic.String.Split(V.Screen.SS_Form1!lbl_txtHours.Caption,":",V.Local.sText)
+F.Intrinsic.String.Split(V.Local.sText(1),"-",V.Local.sText)
+'if beg_cymd=beg date then 1st run
+F.Intrinsic.Date.ConvertDString(V.Local.sText(0).Trim,"MM/DD/YYYY",V.Local.dDate)
+F.Intrinsic.Control.If(V.Local.dDate,=,V.Screen.SS_Form1!dtpBeg.Value)
+'if beg_cymd and end_cymd=beg and end dates, then final run
+	F.Intrinsic.Date.ConvertDString(V.Local.sText(1).Trim,"MM/DD/YYYY",V.Local.dDate)
+	F.Intrinsic.Control.If(V.Local.dDate,=,V.Screen.SS_Form1!dtpEnd.Value)
+		V.Local.iFlag.Set(3)
+'if end_cymd <> end date, then first run
+	F.Intrinsic.Control.Else
+		V.Local.iFlag.Set(1)
+		F.Intrinsic.Variable.UDTSetMemberValue(V.uGlobal.uPyrl!Week1_Flag,"Y")
+	F.Intrinsic.Control.EndIf
+'if end_cymd=end date then 2nd run
+F.Intrinsic.Control.Else
+	V.Local.iFlag.Set(2)
+	F.Intrinsic.Variable.UDTSetMemberValue(V.uGlobal.uPyrl!Week2_Flag,"Y")
+F.Intrinsic.Control.EndIf
+
+'set additional field reference
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!Trmnl,"Trmnl")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!Beg_Pay_Prd,"Beg_Pay_Prd")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!End_Pay_Prd,"End_Pay_Prd")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!Week1_Flag,"Week1_Flag")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!Week2_Flag,"Week2_Flag")
+
+'set defult values
+F.Intrinsic.Variable.UDTSetMemberValue(V.uGlobal.uPyrl!Trmnl,V.Caller.Terminal)
+F.Intrinsic.Variable.UDTSetMemberValue(V.uGlobal.uPyrl!Beg_Pay_Prd,V.Screen.SS_Form1!dtpBeg.Value)
+F.Intrinsic.Variable.UDTSetMemberValue(V.uGlobal.uPyrl!End_Pay_Prd,V.Screen.SS_Form1!dtpEnd.Value)
+
+'remove field referenc not used on final table
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!TYPE,"")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!EC,"")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!Hours,"")
+F.Intrinsic.Variable.SetUDTFieldReference(V.uGlobal.uPyrl!EStatus,"")
+
+'iflag=1=first week
+F.Intrinsic.Control.If(V.Local.iFlag,=,1)
+	'clear any existing records on the table.
+	F.Intrinsic.String.Concat("delete from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"' and Week1_Flag='Y'",V.Local.sValue)
+	F.ODBC.Connection!Con.Execute(V.Local.sValue)
+	F.Intrinsic.Control.If(V.uGlobal.uPyrl!EC.UBound,>,-1)
+		'write udt to database
+		F.Intrinsic.Control.If(V.uGlobal.uPyrl!EC.UBound,>,-1)
+			F.Intrinsic.String.Concat("select * from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"'",V.Local.sValue)
+			F.ODBC.Connection!Con.OpenRecordsetRW("rstSel",V.Local.sValue)
+				F.Intrinsic.Variable.SaveUDTToRecordset("Con","rstSel","v.uGlobal.uPyrl")
+			F.ODBC.Con!rstSel.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+
+'iflag=2=second week
+F.Intrinsic.Control.ElseIf(V.Local.iFlag,=,2)
+	'clear any existing records on the table.
+	F.Intrinsic.String.Concat("delete from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"' and Week2_Flag='Y'",V.Local.sValue)
+	F.ODBC.Connection!Con.Execute(V.Local.sValue)
+	'write udt to database
+	F.Intrinsic.Control.If(V.uGlobal.uPyrl!EC.UBound,>,-1)
+		F.Intrinsic.String.Concat("select * from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"'",V.Local.sValue)
+		F.ODBC.Connection!Con.OpenRecordsetRW("rstSel",V.Local.sValue)
+			F.Intrinsic.Variable.SaveUDTToRecordset("Con","rstSel","v.uGlobal.uPyrl")
+		F.ODBC.Con!rstSel.Close
+	F.Intrinsic.Control.endif
+
+'iflag=3=both weeks/final pay.  should catch this at the beginning, but just in  case...
+F.Intrinsic.Control.ElseIf(V.Local.iFlag,=,3)
+	'verify flags have been set for both weeks
+	F.Intrinsic.Control.CallSub(Verify)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(Ss_form1_unload)
+
+program.sub.cmdok_click.end
+
+
+program.sub.ss_form1_unload.start
+
+F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.End
+
+program.sub.ss_form1_unload.end
+
+
+Program.Sub.OpenScreen.Start
+
+
+V.Local.sSel.Declare(String)
+V.Local.sLabel.Declare(String)
+V.Local.sTime.Declare(String)
+V.Local.sDate.Declare(String)
+V.Local.dDate.Declare(Date)
+
+
+F.Intrinsic.Date.DateAdd("d",13,V.Screen.SS_Form1!dtpBeg.Value,V.Local.dDate)
+Gui.SS_Form1.dtpEnd.Value(V.Local.dDate)
+
+Function.Intrinsic.String.Left(Variable.Passed.888888,8,Variable.Local.sDate)
+Function.Intrinsic.String.Mid(Variable.Passed.888888,9,6,Variable.Local.sTime)
+
+F.Intrinsic.String.Concat("select Beg_Cymd, End_Cymd,Pay_Freq from Pyrl_Labor_Xfer where Run_Cymd='",V.Local.sDate,"' and Run_Time='",V.Local.sTime,"'",V.Local.sSel)
+F.ODBC.Connection!Con.OpenRecordsetRO("rstSel",V.Local.sSel)
+	'For weekly entries
+	F.Intrinsic.Control.If(V.ODBC.Con!rstSel.EOF,=,False)
+		F.Intrinsic.Control.If(V.ODBC.Con!rstSel.FieldValTrim!Pay_Freq,=,"W")
+			F.Intrinsic.Date.ConvertDString(V.ODBC.Con!rstSel.FieldValTrim!Beg_Cymd,"YYYYMMDD",V.Local.dDate)
+			F.Intrinsic.String.Format(V.Local.dDate,"MM/DD/YYYY",V.Local.sDate)
+			F.Intrinsic.String.Concat("Hours For Week: ",V.Local.sDate,V.Local.sLabel)
+			F.Intrinsic.Date.ConvertDString(V.ODBC.Con!rstSel.FieldValTrim!End_Cymd,"YYYYMMDD",V.Local.dDate)
+			F.Intrinsic.String.Format(V.Local.dDate,"MM/DD/YYYY",V.Local.sDate)
+			F.Intrinsic.String.Concat(V.Local.sLabel," - ",V.Local.sDate,V.Local.sLabel)
+
+			F.Intrinsic.Variable.AddRV("FINAL","False")
+			Gui.SS_Form1.txtHours.Text("40")
+			gui.SS_Form1.lbl_txtHours.create(label,V.Local.sLabel,True,3570,255,1,100,1000,True,0,Arial,8,-2147483633,0)
+		'for bi-weekly entry
+		F.Intrinsic.Control.Else
+			F.Intrinsic.Variable.AddRV("FINAL","True")
+			F.Intrinsic.Variable.AddRV("BegDte",V.ODBC.Con!rstSel.FieldVal!Beg_Cymd)
+			F.Intrinsic.Variable.AddRV("EndDte",V.ODBC.Con!rstSel.FieldVal!End_Cymd)
+		F.Intrinsic.Control.EndIf
+	'if no pay records found
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.CallSub(Ss_form1_unload)
+	F.Intrinsic.Control.EndIf
+F.ODBC.Con!rstSel.Close
+
+
+
+Program.Sub.OpenScreen.End
+
+
+Program.Sub.Verify.Start
+
+V.Local.sSel.Declare(String)
+V.Local.dDate.Declare(Date)
+V.Local.sBegDte.Declare(String)
+V.Local.sEndDte.Declare(String)
+
+F.Intrinsic.Date.ConvertDString(V.Args.BegDte,"YYYYMMDD",V.Local.dDate)
+F.Intrinsic.String.Format(V.Local.dDate,"MM/DD/YYYY",V.Local.sBegDte)
+F.Intrinsic.Date.ConvertDString(V.Args.EndDte,"YYYYMMDD",V.Local.dDate)
+F.Intrinsic.String.Format(V.Local.dDate,"MM/DD/YYYY",V.Local.sEndDte)
+
+F.Intrinsic.String.Concat("select * from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"' and Beg_Pay_Prd='",V.Local.sBegDte,"' and End_Pay_Prd='",V.Local.sEndDte,"' and Week1_Flag='Y' ",V.Local.sSel)
+F.ODBC.Connection!Con.OpenRecordsetRO("rstSel",V.Local.sSel)
+	F.Intrinsic.Control.If(V.ODBC.Con!rstSel.EOF,=,True)
+		F.Intrinsic.UI.Msgbox("Incentive Eligibility Records Not Found For Week 1")
+	F.Intrinsic.Control.EndIf
+F.ODBC.Con!rstSel.Close
+
+F.Intrinsic.String.Concat("select * from GCG_3481_Incentv_Pay_Elig where Trmnl='",V.Caller.Terminal,"' and Beg_Pay_Prd='",V.Local.sBegDte,"' and End_Pay_Prd='",V.Local.sEndDte,"' and Week2_Flag='Y' ",V.Local.sSel)
+F.ODBC.Connection!Con.OpenRecordsetRO("rstSel",V.Local.sSel)
+	F.Intrinsic.Control.If(V.ODBC.Con!rstSel.EOF,=,True)
+		F.Intrinsic.UI.Msgbox("Incentive Eligibility Records Not Found For Week 2")
+	F.Intrinsic.Control.EndIf
+F.ODBC.Con!rstSel.Close
+
+
+Program.Sub.Verify.End
+
+
+Program.Sub.TotalHours.Start
+
+V.Local.sSel.Declare(String)
+V.Local.sDate.Declare(String)
+V.Local.sTime.Declare(String)
+V.Local.iForA.Declare(Long)
+V.Local.iForB.Declare(Long)
+V.Local.sRetA.Declare(String)
+V.Local.fHours.Declare(Float)
+V.Local.fMin.Declare(Float)
+V.Local.sValue.Declare(String)
+
+Function.Intrinsic.String.Left(Variable.Passed.888888,8,Variable.Local.sDate)
+Function.Intrinsic.String.Mid(Variable.Passed.888888,9,6,Variable.Local.sTime)
+
+'copy udt to be able to get distinct list of employees
+F.Intrinsic.Variable.UDTCopy(V.uGlobal.uPyrl,V.uGlobal.uEmp,False)
+F.Intrinsic.Variable.UDTMultiFlagDuplicates(V.uGlobal.uEmp!Employee)
+F.Intrinsic.Variable.UDTDeleteFlagged(V.uGlobal.uEmp)
+
+
+'for each employee
+F.Intrinsic.Control.For(V.Local.iForA,V.uGlobal.uEmp!Employee.LBound,V.uGlobal.uEmp!Employee.UBound,1)
+'reset hours to 0
+	V.Local.fHours.Set(0)
+'look for all employee's hours
+	F.Intrinsic.Variable.UDTMultiSeek(V.uGlobal.uPyrl!Employee,V.uGlobal.uEmp(v.Local.iForA)!Employee,V.Local.sRetA)
+'should find all employees, but verify
+	F.Intrinsic.Control.If(V.Local.sRetA.Trim,<>,"")
+		F.Intrinsic.String.Split(V.Local.sRetA,"*!*",V.Local.sRetA)
+		F.Intrinsic.Control.For(V.Local.iForB,V.Local.sRetA.LBound,V.Local.sRetA.UBound,1)
+		'get the total number of hours
+			F.Intrinsic.Math.Add(V.Local.fHours,V.uGlobal.uPyrl(v.Local.sRetA(v.Local.iForB))!Hours,V.Local.fHours)
+		F.Intrinsic.Control.Next(V.Local.iForB)
+		'set the total to the udt
+		F.Intrinsic.Variable.UDTMultiSeekSet(V.uGlobal.uPyrl!Employee,V.uGlobal.uEmp(v.Local.iForA)!Employee,V.uGlobal.uPyrl!Hours,V.Local.fHours)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.iForA)
+
+'just need one employee hours record for each employee record
+F.Intrinsic.Variable.UDTMultiFlagDuplicates(V.uGlobal.uPyrl!Employee)
+F.Intrinsic.Variable.UDTDeleteFlagged(V.uGlobal.uPyrl)
+
+f.Intrinsic.String.Concat("<::",v.Screen.SS_Form1!txtHours.Text.trim,v.Local.sValue)
+'see if hours are >=hours selection
+F.Intrinsic.Variable.UDTMultiFlag(V.uGlobal.uPyrl!Hours,V.Local.sValue)
+F.Intrinsic.Variable.UDTDeleteFlagged(V.uGlobal.uPyrl)
+
+Program.Sub.TotalHours.End
+
+
+Program.Sub.Comments.Start
+${$0$}$GCG_Incentive_Pay_Eligibility$}$JCT$}$7/6/2012
+${$1$}$$}$$}$0$}$15290$}$PR0999-CREATE-FILE-HOOK$}$7/6/2012 1:36:11 PM$}$(Program: ; Screen: PR0999)
+
+${$3$}$0$}$$}$-1$}$-1$}$$}$1/1/1900$}$for Elevating Boats
+Program.Sub.Comments.End
+Program.Sub.ScreenSS.Start
+SS_Form1{{CAPTION::Incentive Pay Eligibility
+SS_Form1.CTRL{{NAME::dtpBeg\\TYPE::6\\CAPTION::Pay Period Begin\\TABSTOP::1\\GROUP::2\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::dtpEnd\\TYPE::6\\CAPTION::Pay Period End\\TABSTOP::2\\GROUP::2\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::lbl1\\TYPE::1\\GROUP::3\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::txtHours\\TYPE::2\\TABSTOP::3\\GROUP::4\\BROWSER::0\\SIZE::1
+SS_Form1.CTRL{{NAME::cmdOk\\TYPE::5\\CAPTION::Ok\\TABSTOP::4\\GROUP::5\\BROWSER::0\\SIZE::1
+
+Program.Sub.ScreenSS.End
+
